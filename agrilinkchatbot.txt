@@ -1,0 +1,147 @@
+import { useState } from "react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import { ShoppingCart, CheckCircle, XCircle, Truck, Mic, Send, Volume2, Bot } from "lucide-react";
+
+export default function AgriLinkMarketFarmer() {
+  const [orders, setOrders] = useState([]);
+  const [marketOrder, setMarketOrder] = useState("");
+  const [status, setStatus] = useState({});
+  const [messages, setMessages] = useState([]);
+  const [chatInput, setChatInput] = useState("");
+  const [botResponse, setBotResponse] = useState("");
+
+  const placeOrder = () => {
+    if (!marketOrder.trim()) return;
+    const newOrder = { id: orders.length + 1, text: marketOrder, status: "Pending" };
+    setOrders([...orders, newOrder]);
+    setStatus({ ...status, [newOrder.id]: "Pending" });
+    setMarketOrder("");
+  };
+
+  const updateStatus = (id, newStatus) => {
+    setStatus({ ...status, [id]: newStatus });
+  };
+
+  const sendMessage = () => {
+    if (!chatInput.trim()) return;
+    setMessages([...messages, { text: chatInput, sender: "You" }]);
+    setChatInput("");
+    getBotResponse(chatInput);
+  };
+
+  const getBotResponse = (query) => {
+    const generalResponses = {
+      "hello": "Hello! How can I assist you today?",
+      "order status": "To check your order status, go to 'Farmer Order Management'.",
+      "how to place order": "Enter your order details and click 'Place Order'.",
+      "contact farmer": "You can chat with farmers directly in the 'Direct Chat' section.",
+      "track order": "Order tracking is available in 'Farmer Order Management'."
+    };
+
+    const personalGuidanceResponses = {
+      "best crops": "For your region, the best crops depend on soil quality and climate. Consult an expert for detailed insights.",
+      "farming tips": "Consider crop rotation, efficient irrigation, and organic fertilizers for better yield.",
+      "market prices": "You can check real-time market prices in the 'Market Trends' section of the app.",
+      "weather updates": "Stay updated with local weather forecasts in the 'Weather Insights' section."
+    };
+
+    setBotResponse(
+      generalResponses[query.toLowerCase()] || personalGuidanceResponses[query.toLowerCase()] || "I'm here to assist you! Ask me anything about orders and farmers."
+    );
+  };
+
+  const playVoiceMessage = (message) => {
+    const speech = new SpeechSynthesisUtterance(message);
+    window.speechSynthesis.speak(speech);
+  };
+
+  return (
+    <div className="p-6 max-w-2xl mx-auto space-y-4">
+      <Card>
+        <CardContent className="p-4 space-y-2">
+          <h2 className="text-xl font-bold">📦 Order Placement (Market)</h2>
+          <Textarea
+            value={marketOrder}
+            onChange={(e) => setMarketOrder(e.target.value)}
+            placeholder="Enter order details..."
+          />
+          <Button onClick={placeOrder} className="flex items-center">
+            <ShoppingCart className="w-4 h-4 mr-1" /> Place Order
+          </Button>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardContent className="p-4 space-y-2">
+          <h2 className="text-xl font-bold">🚜 Farmer Order Management</h2>
+          {orders.length === 0 ? (
+            <p>No orders yet.</p>
+          ) : (
+            <div className="space-y-2">
+              {orders.map((order) => (
+                <div key={order.id} className="border p-2 rounded bg-gray-100">
+                  <p><strong>Order:</strong> {order.text}</p>
+                  <p><strong>Status:</strong> {status[order.id]}</p>
+                  <div className="space-x-2 mt-2">
+                    <Button onClick={() => updateStatus(order.id, "Accepted")} variant="success">
+                      <CheckCircle className="w-4 h-4 mr-1" /> Accept
+                    </Button>
+                    <Button onClick={() => updateStatus(order.id, "Rejected")} variant="destructive">
+                      <XCircle className="w-4 h-4 mr-1" /> Reject
+                    </Button>
+                    <Button onClick={() => updateStatus(order.id, "Dispatched")} variant="secondary">
+                      <Truck className="w-4 h-4 mr-1" /> Dispatch
+                    </Button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardContent className="p-4 space-y-2">
+          <h2 className="text-xl font-bold">💬 Direct Chat (Market ↔ Farmers)</h2>
+          <div className="h-40 overflow-y-auto border p-2 rounded bg-gray-100">
+            {messages.map((msg, index) => (
+              <div key={index} className="mb-1 flex justify-between">
+                <span>
+                  <strong>{msg.sender}: </strong>
+                  {msg.text}
+                </span>
+                <Button variant="ghost" onClick={() => playVoiceMessage(msg.text)}>
+                  <Volume2 className="w-4 h-4" />
+                </Button>
+              </div>
+            ))}
+          </div>
+          <div className="flex space-x-2">
+            <Textarea
+              value={chatInput}
+              onChange={(e) => setChatInput(e.target.value)}
+              placeholder="Type your message..."
+            />
+            <Button onClick={sendMessage} className="flex items-center">
+              <Send className="w-4 h-4 mr-1" /> Send
+            </Button>
+            <Button variant="outline" className="flex items-center">
+              <Mic className="w-4 h-4 mr-1" /> Voice
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardContent className="p-4 space-y-2">
+          <h2 className="text-xl font-bold">🤖 AI Assistant</h2>
+          <div className="border p-2 rounded bg-gray-100">
+            <p><strong>Bot:</strong> {botResponse}</p>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
