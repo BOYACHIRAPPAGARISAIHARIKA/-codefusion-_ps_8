@@ -1,0 +1,62 @@
+import { useState } from "react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Upload } from "lucide-react";
+
+export default function FarmerDashboard() {
+  const [farmer, setFarmer] = useState({ name: "", location: "" });
+  const [products, setProducts] = useState([]);
+  const [newProduct, setNewProduct] = useState({ name: "", price: "", stock: "", image: null });
+
+  const handleProductChange = (e) => {
+    setNewProduct({ ...newProduct, [e.target.name]: e.target.value });
+  };
+
+  const handleImageUpload = (e) => {
+    setNewProduct({ ...newProduct, image: URL.createObjectURL(e.target.files[0]) });
+  };
+
+  const addProduct = () => {
+    setProducts([...products, newProduct]);
+    setNewProduct({ name: "", price: "", stock: "", image: null });
+  };
+
+  return (
+    <div className="p-4">
+      <h1 className="text-2xl font-bold mb-4">Farmer Profile</h1>
+      <div className="mb-4">
+        <Label>Name</Label>
+        <Input value={farmer.name} onChange={(e) => setFarmer({ ...farmer, name: e.target.value })} />
+      </div>
+      <div className="mb-4">
+        <Label>Location</Label>
+        <Input value={farmer.location} onChange={(e) => setFarmer({ ...farmer, location: e.target.value })} />
+      </div>
+      
+      <h2 className="text-xl font-bold mt-6">Add Product</h2>
+      <div className="grid grid-cols-2 gap-4 mt-2">
+        <Input name="name" placeholder="Product Name" value={newProduct.name} onChange={handleProductChange} />
+        <Input name="price" placeholder="Price" value={newProduct.price} onChange={handleProductChange} />
+        <Input name="stock" placeholder="Stock" value={newProduct.stock} onChange={handleProductChange} />
+        <Input type="file" onChange={handleImageUpload} />
+      </div>
+      <Button className="mt-4" onClick={addProduct}>Add Product</Button>
+
+      <h2 className="text-xl font-bold mt-6">Product List</h2>
+      <div className="grid grid-cols-3 gap-4 mt-2">
+        {products.map((product, index) => (
+          <Card key={index}>
+            <CardContent>
+              {product.image && <img src={product.image} alt={product.name} className="w-full h-32 object-cover" />}
+              <h3 className="text-lg font-bold mt-2">{product.name}</h3>
+              <p>Price: ${product.price}</p>
+              <p>Stock: {product.stock}</p>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+    </div>
+  );
+}
